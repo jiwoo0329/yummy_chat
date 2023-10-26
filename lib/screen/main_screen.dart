@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yummy_chat/config/palette.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:yummy_chat/screen/chat_screen.dart';
 
 class LoginSignupScreen extends StatefulWidget {
   const LoginSignupScreen({super.key});
@@ -9,16 +12,18 @@ class LoginSignupScreen extends StatefulWidget {
 }
 
 class _LoginSignupScreenState extends State<LoginSignupScreen> {
+  final _authentication = FirebaseAuth.instance; // auth인스턴스 생성(외부 접근 방지를 위해 언더스코어를 붙여 프라이빗으로 생성)
+
   bool isSignupScreen = true; // 기본적으로 회원가입이 선택되게 보임
   final _formKey = GlobalKey<FormState>();
   String userName = '';
   String userEmail = '';
   String userPassword = '';
 
-  void _tryValidation(){
+  void _tryValidation() {
     final isValid = _formKey.currentState!.validate();
 
-    if(isValid){
+    if (isValid) {
       _formKey.currentState!.save();
     }
   }
@@ -28,7 +33,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
     return Scaffold(
         backgroundColor: Palette.backgroundColor,
         body: GestureDetector(
-          onTap: (){
+          onTap: () {
             FocusScope.of(context).unfocus();
           },
           child: Stack(
@@ -56,16 +61,16 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                       fontSize: 25,
                                       color: Colors.white),
                                   children: [
-                                TextSpan(
-                                    text: isSignupScreen
-                                        ? ' to Yummy Chat!'
-                                        : ' back',
-                                    style: TextStyle(
-                                        letterSpacing: 1.0,
-                                        fontSize: 25,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold))
-                              ])),
+                                    TextSpan(
+                                        text: isSignupScreen
+                                            ? ' to Yummy Chat!'
+                                            : ' back',
+                                        style: TextStyle(
+                                            letterSpacing: 1.0,
+                                            fontSize: 25,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold))
+                                  ])),
                           Text(
                             isSignupScreen
                                 ? 'Signup to continue'
@@ -87,7 +92,10 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                     curve: Curves.easeIn,
                     padding: EdgeInsets.all(20.0),
                     height: isSignupScreen ? 280.0 : 250.0,
-                    width: MediaQuery.of(context).size.width - 40,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width - 40,
                     margin: EdgeInsets.symmetric(horizontal: 20.0),
                     decoration: BoxDecoration(
                         color: Colors.white,
@@ -169,14 +177,18 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 child: Column(
                                   children: [
                                     TextFormField(
-                                      key:ValueKey(1),
-                                      validator: (value){
-                                        if(value!.isEmpty || value.length <4){
+                                      key: ValueKey(1),
+                                      validator: (value) {
+                                        if (value!.isEmpty ||
+                                            value.length < 4) {
                                           return 'Please enter at least 4 characters.';
                                         }
                                         return null;
                                       },
-                                      onSaved: (value){
+                                      onChanged: (value) {
+                                        userName = value;
+                                      },
+                                      onSaved: (value) {
                                         userName = value!;
                                       },
                                       decoration: InputDecoration(
@@ -204,14 +216,19 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                       height: 8,
                                     ),
                                     TextFormField(
-                                      key:ValueKey(2),
-                                      validator: (value){
-                                        if(value!.isEmpty || !value.contains('@')){
+                                      keyboardType: TextInputType.emailAddress,
+                                      key: ValueKey(2),
+                                      validator: (value) {
+                                        if (value!.isEmpty ||
+                                            !value.contains('@')) {
                                           return 'Please enter a valid email address.';
                                         }
                                         return null;
                                       },
-                                      onSaved: (value){
+                                      onChanged: (value) {
+                                        userEmail = value;
+                                      },
+                                      onSaved: (value) {
                                         userEmail = value!;
                                       },
                                       decoration: InputDecoration(
@@ -239,14 +256,19 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                       height: 8,
                                     ),
                                     TextFormField(
-                                      key:ValueKey(3),
-                                      validator: (value){
-                                        if(value!.isEmpty || value.length < 6){
+                                      obscureText: true,
+                                      key: ValueKey(3),
+                                      validator: (value) {
+                                        if (value!.isEmpty ||
+                                            value.length < 6) {
                                           return 'Please must be at least 7 characters long.';
                                         }
                                         return null;
                                       },
-                                      onSaved: (value){
+                                      onChanged: (value) {
+                                        userPassword = value;
+                                      },
+                                      onSaved: (value) {
                                         userPassword = value!;
                                       },
                                       decoration: InputDecoration(
@@ -282,14 +304,15 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 child: Column(
                                   children: [
                                     TextFormField(
-                                      key:ValueKey(4),
-                                      validator: (value){
-                                        if(value!.isEmpty || !value.contains('@')){
+                                      key: ValueKey(4),
+                                      validator: (value) {
+                                        if (value!.isEmpty ||
+                                            !value.contains('@')) {
                                           return '이메일이 올바르지 않습니다.';
                                         }
                                         return null;
                                       },
-                                      onSaved: (value){
+                                      onSaved: (value) {
                                         userEmail = value!;
                                       },
                                       decoration: InputDecoration(
@@ -317,14 +340,15 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                       height: 8,
                                     ),
                                     TextFormField(
-                                      key:ValueKey(5),
-                                      validator: (value){
-                                        if(value!.isEmpty || value.length <6){
+                                      key: ValueKey(5),
+                                      validator: (value) {
+                                        if (value!.isEmpty ||
+                                            value.length < 6) {
                                           return '파이어베이스는 비번 6자 이상 넣어야함.';
                                         }
                                         return null;
                                       },
-                                      onSaved: (value){
+                                      onSaved: (value) {
                                         userPassword = value!;
                                       },
                                       decoration: InputDecoration(
@@ -372,8 +396,31 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(50)),
                     child: GestureDetector(
-                      onTap: (){
-                        _tryValidation();
+                      onTap: () async {
+                        if (isSignupScreen) {
+                          _tryValidation();
+
+                          try {
+                            final newUser = await _authentication
+                                .createUserWithEmailAndPassword(
+                                email: userEmail,
+                                password: userPassword);
+                            if (newUser.user != null) {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return ChatScreen();
+                                  }),
+                              );
+                            }
+                          } catch (e) {
+                            print(e);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  'Please check your email or password'),
+                              backgroundColor: Colors.blue,)
+                            );
+                          }
+                        }
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -401,14 +448,21 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
               ),
               // 화살표 전송 버튼
               AnimatedPositioned(
-                duration: Duration(milliseconds: 500),
+                  duration: Duration(milliseconds: 500),
                   curve: Curves.easeIn,
-                  top: isSignupScreen ? MediaQuery.of(context).size.height - 125 : MediaQuery.of(context).size.height - 165,
+                  top: isSignupScreen ? MediaQuery
+                      .of(context)
+                      .size
+                      .height - 125 : MediaQuery
+                      .of(context)
+                      .size
+                      .height - 165,
                   right: 0,
                   left: 0,
                   child: Column(
                     children: [
-                      Text(isSignupScreen ? 'or Signup with' : 'or Signin with'),
+                      Text(
+                          isSignupScreen ? 'or Signup with' : 'or Signin with'),
                       SizedBox(
                         height: 10,
                       ),
