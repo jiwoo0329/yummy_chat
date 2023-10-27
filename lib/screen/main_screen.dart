@@ -12,7 +12,8 @@ class LoginSignupScreen extends StatefulWidget {
 }
 
 class _LoginSignupScreenState extends State<LoginSignupScreen> {
-  final _authentication = FirebaseAuth.instance; // auth인스턴스 생성(외부 접근 방지를 위해 언더스코어를 붙여 프라이빗으로 생성)
+  final _authentication =
+      FirebaseAuth.instance; // auth인스턴스 생성(외부 접근 방지를 위해 언더스코어를 붙여 프라이빗으로 생성)
 
   bool isSignupScreen = true; // 기본적으로 회원가입이 선택되게 보임
   final _formKey = GlobalKey<FormState>();
@@ -315,6 +316,9 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                       onSaved: (value) {
                                         userEmail = value!;
                                       },
+                                      onChanged: (value) {
+                                        userEmail = value;
+                                      },
                                       decoration: InputDecoration(
                                           prefixIcon: Icon(
                                             Icons.email_rounded,
@@ -350,6 +354,9 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                       },
                                       onSaved: (value) {
                                         userPassword = value!;
+                                      },
+                                      onChanged: (value) {
+                                        userPassword = value;
                                       },
                                       decoration: InputDecoration(
                                           prefixIcon: Icon(
@@ -403,22 +410,42 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                           try {
                             final newUser = await _authentication
                                 .createUserWithEmailAndPassword(
-                                email: userEmail,
-                                password: userPassword);
+                                email: userEmail, password: userPassword);
                             if (newUser.user != null) {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return ChatScreen();
-                                  }),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return ChatScreen();
+                                }),
                               );
                             }
                           } catch (e) {
                             print(e);
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  'Please check your email or password'),
-                              backgroundColor: Colors.blue,)
+                              content:
+                              Text('Please check your email or password'),
+                              backgroundColor: Colors.blue,
+                            ));
+                          }
+                        }
+                        if (!isSignupScreen) {
+                          _tryValidation();
+
+                          try {
+                            final newUser = await _authentication
+                                .signInWithEmailAndPassword(email: userEmail,
+                                password: userPassword
                             );
+                            if (newUser.user != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return ChatScreen();
+                                }),
+                              );
+                            }
+                          }catch(e){
+                            print(e);
                           }
                         }
                       },
@@ -450,10 +477,12 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
               AnimatedPositioned(
                   duration: Duration(milliseconds: 500),
                   curve: Curves.easeIn,
-                  top: isSignupScreen ? MediaQuery
+                  top: isSignupScreen
+                      ? MediaQuery
                       .of(context)
                       .size
-                      .height - 125 : MediaQuery
+                      .height - 125
+                      : MediaQuery
                       .of(context)
                       .size
                       .height - 165,
