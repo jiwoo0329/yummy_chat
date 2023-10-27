@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:yummy_chat/screen/main_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -15,9 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Chatting app',
-      theme: ThemeData(
-        primarySwatch: Colors.blue
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: LoginSignupScreen(),
     );
   }
