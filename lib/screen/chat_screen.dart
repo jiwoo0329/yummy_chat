@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:yummy_chat/chatting/chat/message.dart';
+import 'package:yummy_chat/chatting/chat/new_message.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -36,49 +39,70 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Stream builder'),
         actions: [
           IconButton(
-              onPressed: () {
-                _authentication.signOut();
-                Navigator.pop(context);
-              },
               icon: Icon(
                 Icons.exit_to_app_sharp,
                 color: Colors.white,
-              ))
+              ),
+              onPressed: () {
+                _authentication.signOut();
+              })
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('chats/pVruTdlJjjNxlBW0UXVi/message')
-            .snapshots(),
-        // stream과 연결되어 지속적으로 데이터 받아옴, snapshots:새로운벨류지속적업데이트해주는메소드
-        builder: (context, streamSnapshot) {
 
-          if(streamSnapshot.connectionState == ConnectionState.waiting){
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          final docs = streamSnapshot.data!.docs;
+      body: Container(
+        child: Column(
+          children: [
+            Expanded(child: Messages()),
+            NewMessage(),
+          ],
 
-          return ListView.builder(
-              itemCount: docs.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    docs[index]['text'],
-                    style: TextStyle(fontSize: 20.0),
-                  ),
-                );
-              });
-        }, // builder: 결과를 반영, snapshot: stream의 결과물
+        ),
       ),
+
+      // body: StreamBuilder(
+      //   stream: FirebaseFirestore.instance
+      //       .collection('/ chats/pVruTdlJjjNxlBW0UXVi/message')
+      //       .snapshots(),
+      //   // stream과 연결되어 지속적으로 데이터 받아옴, snapshots:새로운벨류지속적업데이트해주는메소드
+      //   builder: (BuildContext context,
+      //       AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+      //     if (snapshot.data == null) {
+      //       // 임시 코드
+      //       return Container(
+      //         padding: EdgeInsets.all(8.0),
+      //         child: Text(
+      //           '내용없음',
+      //           style: TextStyle(fontSize: 20.0),
+      //         ),
+      //       );
+      //     }else {
+      //       if (snapshot.connectionState == ConnectionState.waiting) {
+      //         return Center(
+      //           child: CircularProgressIndicator(),
+      //         );
+      //       }
+      //
+      //       final docs = snapshot.data!.docs;
+      //
+      //       return ListView.builder(
+      //           itemCount: docs.length,
+      //           itemBuilder: (context, index) {
+      //             return Container(
+      //               padding: EdgeInsets.all(8.0),
+      //               child: Text(
+      //                 docs[index]['text'],
+      //                 style: TextStyle(fontSize: 20.0),
+      //               ),
+      //             );
+      //           });
+      //     }
+      //   }, // builder: 결과를 반영, snapshot: stream의 결과물
+      // ),
     );
   }
 

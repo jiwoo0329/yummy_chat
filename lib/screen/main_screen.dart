@@ -18,7 +18,6 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
 
   bool isSignupScreen = true; // 기본적으로 회원가입이 선택되게 보임
   bool showSpinner = false;
-  
   final _formKey = GlobalKey<FormState>();
   String userName = '';
   String userEmail = '';
@@ -37,7 +36,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
     return Scaffold(
         backgroundColor: Palette.backgroundColor,
         body: ModalProgressHUD(
-          inAsyncCall: showSpinner,
+          inAsyncCall: showSpinner, // 전송버튼 눌렀을때 스피너 돌아감.
           child: GestureDetector(
             onTap: () {
               FocusScope.of(context).unfocus();
@@ -67,16 +66,16 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                         fontSize: 25,
                                         color: Colors.white),
                                     children: [
-                                      TextSpan(
-                                          text: isSignupScreen
-                                              ? ' to Yummy Chat!'
-                                              : ' back',
-                                          style: TextStyle(
-                                              letterSpacing: 1.0,
-                                              fontSize: 25,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold))
-                                    ])),
+                                  TextSpan(
+                                      text: isSignupScreen
+                                          ? ' to Yummy Chat!'
+                                          : ' back',
+                                      style: TextStyle(
+                                          letterSpacing: 1.0,
+                                          fontSize: 25,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold))
+                                ])),
                             Text(
                               isSignupScreen
                                   ? 'Signup to continue'
@@ -98,10 +97,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                       curve: Curves.easeIn,
                       padding: EdgeInsets.all(20.0),
                       height: isSignupScreen ? 280.0 : 250.0,
-                      width: MediaQuery
-                          .of(context)
-                          .size
-                          .width - 40,
+                      width: MediaQuery.of(context).size.width - 40,
                       margin: EdgeInsets.symmetric(horizontal: 20.0),
                       decoration: BoxDecoration(
                           color: Colors.white,
@@ -222,7 +218,8 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                         height: 8,
                                       ),
                                       TextFormField(
-                                        keyboardType: TextInputType.emailAddress,
+                                        keyboardType:
+                                            TextInputType.emailAddress,
                                         key: ValueKey(2),
                                         validator: (value) {
                                           if (value!.isEmpty ||
@@ -410,7 +407,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                       child: GestureDetector(
                         onTap: () async {
                           setState(() {
-                            showSpinner = true;
+                            showSpinner = true; // 스피너 돌아감.
                           });
                           if (isSignupScreen) {
                             _tryValidation();
@@ -418,7 +415,16 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             try {
                               final newUser = await _authentication
                                   .createUserWithEmailAndPassword(
-                                  email: userEmail, password: userPassword);
+                                      email: userEmail, password: userPassword);
+
+                              await FirebaseFirestore.instance
+                                  .collection('user')  // 컬랙션이 자동 새로 생성됨.
+                                  .doc(newUser.user!.uid)
+                                  .set({
+                                'userName': userName,
+                                'email' : userEmail,
+                              });
+
                               if (newUser.user != null) {
                                 Navigator.push(
                                   context,
@@ -432,9 +438,10 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               }
                             } catch (e) {
                               print(e);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
                                 content:
-                                Text('Please check your email or password'),
+                                    Text('Please check your email or password'),
                                 backgroundColor: Colors.blue,
                               ));
                             }
@@ -444,21 +451,23 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
 
                             try {
                               final newUser = await _authentication
-                                  .signInWithEmailAndPassword(email: userEmail,
-                                  password: userPassword
-                              );
+                                  .signInWithEmailAndPassword(
+                                      email: userEmail, password: userPassword);
                               if (newUser.user != null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) {
-                                    return ChatScreen();
-                                  }),
-                                );
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(builder: (context) {
+                                //     return ChatScreen();
+                                //   }),
+                                //);
                                 setState(() {
-                                  showSpinner = false;
+                                  showSpinner = false; // 스피너 멈춤.
                                 });
                               }
-                            }catch(e){
+                            } catch (e) {
+                              setState(() {
+                                showSpinner = false; // 스피너 멈춤.
+                              });
                               print(e);
                             }
                           }
@@ -492,20 +501,15 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                     duration: Duration(milliseconds: 500),
                     curve: Curves.easeIn,
                     top: isSignupScreen
-                        ? MediaQuery
-                        .of(context)
-                        .size
-                        .height - 125
-                        : MediaQuery
-                        .of(context)
-                        .size
-                        .height - 165,
+                        ? MediaQuery.of(context).size.height - 125
+                        : MediaQuery.of(context).size.height - 165,
                     right: 0,
                     left: 0,
                     child: Column(
                       children: [
-                        Text(
-                            isSignupScreen ? 'or Signup with' : 'or Signin with'),
+                        Text(isSignupScreen
+                            ? 'or Signup with'
+                            : 'or Signin with'),
                         SizedBox(
                           height: 10,
                         ),
