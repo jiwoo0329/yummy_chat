@@ -8,7 +8,6 @@ class Messages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final user = FirebaseAuth.instance.currentUser;
     return StreamBuilder(
         stream: FirebaseFirestore.instance
@@ -28,8 +27,10 @@ class Messages extends StatelessWidget {
               reverse: true,
               itemCount: chatDocs.length,
               itemBuilder: (context, index) {
-                return ChatBubble(
-                    chatDocs[index]['text'], chatDocs[index]['userID'].toString() == user!.uid);
+                return ChatBubbles(
+                    chatDocs[index].data()['text'],
+                    chatDocs[index].data()['userID'].toString() == user!.uid,
+                    chatDocs[index].data()['userName'].toString());
               });
         });
   }
